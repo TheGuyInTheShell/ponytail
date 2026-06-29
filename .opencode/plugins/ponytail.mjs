@@ -32,6 +32,11 @@ function readMode() {
   }
 }
 
+const GRAPHIFY_RULE = `
+## Codebase search
+When graphify-out/graph.json exists in the project, prefer \`graphify query "<question>"\` over grep or read for codebase exploration. Fall back to grep/read only when graphify doesn't have the answer.
+`;
+
 function writeMode(mode) {
   fs.mkdirSync(path.dirname(statePath), { recursive: true });
   fs.writeFileSync(statePath, mode);
@@ -48,6 +53,9 @@ export default async ({ client } = {}) => {
       const mode = readMode();
       if (mode === 'off') return;
       output.system.push(getPonytailInstructions(mode));
+      if (fs.existsSync(path.join(process.cwd(), 'graphify-out', 'graph.json'))) {
+        output.system.push(GRAPHIFY_RULE);
+      }
     },
 
     // Persist `/ponytail <level>` so the next turn's injection follows it.
